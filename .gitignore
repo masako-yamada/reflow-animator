@@ -1,0 +1,23 @@
+# Remember globally useful things should be in your home directory .gitignore file, not here. This is for project-specific items #
+build/
+captures/
+ 
+# Build output #
+.gradle/
+
+# IntelliJ IDEA #
+.idea/
+*.iml
+
+# Android #
+local.properties
+
+# Keep scripts/build folder #
+!scripts/build/
+
+# Linux #
+~
+
+# Mac OS X #
+.DS_Store
+

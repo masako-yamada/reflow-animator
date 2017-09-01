@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Reflow Animator</string>
+
+
+    <string name="long_string">Alan Parsons Project (알란 파슨스 프로젝트)</string>
+    <string name="edit">Edit</string>
+    <string name="play">Play</string>
+    <string name="layers">Layers</string>
+    <string name="align_start">start</string>
+    <string name="align_end">end</string>
+    <string name="align_center">center</string>
+    <string name="source_view">Top text</string>
+    <string name="target_view">Bottom text</string>
+    <string name="bold">bold</string>
+    <string name="italic">italic</string>
+</resources>

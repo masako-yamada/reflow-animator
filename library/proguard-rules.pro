@@ -1,0 +1,3 @@
+-keep class com.shazam.android.widget.text.reflow.*
+-keepattributes *Annotation*
+-dontwarn javax.annotation.*

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer-array name="debug_colors">
+        <item>0xFFFF0000</item>
+        <item>0xFF00FF00</item>
+        <item>0xFF0000FF</item>
+        <item>0xFFFFFF00</item>
+        <item>0xFFFF00FF</item>
+        <item>0xFFFF8080</item>
+        <item>0xFF80FF80</item>
+        <item>0xFF8080FF</item>
+        <item>0xFFFFFF80</item>
+        <item>0xFFFF80FF</item>
+        <item>0xFF80FFFF</item>
+        <item>0xFF800000</item>
+        <item>0xFF008000</item>
+        <item>0xFF000080</item>
+        <item>0xFF808000</item>
+        <item>0xFF800080</item>
+        <item>0xFF008080</item>
+    </integer-array>
+
+</resources>
