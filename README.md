@@ -26,14 +26,18 @@ Have a look at [the sample](https://github.com/shazam/reflow-animator/tree/maste
 Download
 --------
 
-```groovy
-dependencies {
-  compile 'com.shazam:android-reflow-animator:1.0.0'
+Snapshot
+```gradle
+buildscript {
+  repositories {
+    // other repos ...
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+  }
+  dependencies {
+    classpath 'com.shazam:android-reflow-animator:1.0.0-SNAPSHOT'
+  }
 }
 ```
-
-Snapshots of the development version are available in [Sonatype's `snapshots` repository](https://oss.sonatype.org/content/repositories/snapshots/com/shazam/).
-
 
 
 License
