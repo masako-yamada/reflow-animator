@@ -16,7 +16,7 @@ new ReflowTextAnimatorHelper.Builder(fromView, toView)
     .start();
 ```
 
-_Note that both views need to have been laid out when passing them in the `Builder`. Depending on your implementation, this might have to wrap it in an `OnPreDrawListener`._
+_Note that both views need to have been laid out when passing them in the `Builder`. Depending on your implementation, this might have to be wrapped in an `OnPreDrawListener`._
 
 ---
 Have a look at [the sample](https://github.com/shazam/reflow-animator/tree/master/sample) for a more complete implementation! 
