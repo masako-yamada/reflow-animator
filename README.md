@@ -28,14 +28,12 @@ Download
 
 Snapshot
 ```gradle
-buildscript {
-  repositories {
-    // other repos ...
+repositories {
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-  }
-  dependencies {
-    classpath 'com.shazam:android-reflow-animator:1.0.0-SNAPSHOT'
-  }
+}
+
+dependencies {
+    implementation 'com.shazam:android-reflow-animator:1.0.0-SNAPSHOT'
 }
 ```
 
