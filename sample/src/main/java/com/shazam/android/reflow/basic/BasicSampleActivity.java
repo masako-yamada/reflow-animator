@@ -27,14 +27,16 @@ import android.widget.TextView;
 import com.shazam.android.reflow.R;
 import com.shazam.android.widget.text.reflow.ReflowTextAnimatorHelper;
 
+import javax.annotation.Nullable;
+
 public class BasicSampleActivity extends AppCompatActivity {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_basic);
 
-        final TextView fromView = (TextView) findViewById(R.id.fromText);
-        final TextView toView = (TextView) findViewById(R.id.toText);
+        final TextView fromView = findViewById(R.id.fromText);
+        final TextView toView = findViewById(R.id.toText);
 
         // Both views need to have the same text for the transformation to make sense.
         String text = "Some text that is about to transform";

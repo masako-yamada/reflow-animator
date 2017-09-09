@@ -28,6 +28,8 @@ import android.widget.TextView;
 import com.shazam.android.reflow.R;
 import com.shazam.android.widget.text.reflow.ReflowTextAnimatorHelper;
 
+import javax.annotation.Nullable;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -58,7 +60,7 @@ public final class AdvancedSampleActivity extends AppCompatActivity
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sample_advanced);
         ButterKnife.bind(this);
