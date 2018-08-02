@@ -31,6 +31,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
+import android.support.annotation.NonNull;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -42,8 +43,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.os.Build.VERSION.SDK_INT;
@@ -65,9 +64,9 @@ public final class ReflowTextAnimatorHelper {
     private static final float STAGGER_DECAY = 0.8f;
     private static final char ELLIPSIS = '…';
 
-    @Nonnull
+    @NonNull
     private final TextView sourceView;
-    @Nonnull
+    @NonNull
     private final TextView targetView;
 
     private final boolean showLayers;
@@ -85,7 +84,7 @@ public final class ReflowTextAnimatorHelper {
     private Bitmap startText;
     private Bitmap endText;
 
-    private ReflowTextAnimatorHelper(@Nonnull Builder builder) {
+    private ReflowTextAnimatorHelper(@NonNull Builder builder) {
         this.showLayers = builder.showLayers;
         this.sourceView = builder.sourceView;
         this.targetView = builder.targetView;
@@ -263,18 +262,18 @@ public final class ReflowTextAnimatorHelper {
         return runs;
     }
 
-    private int getStartOffsetLeft(@Nonnull Layout startLayout, int currentStartLine) {
+    private int getStartOffsetLeft(@NonNull Layout startLayout, int currentStartLine) {
         return (int) startLayout.getLineLeft(currentStartLine);
     }
 
-    private static int getSectionWidth(@Nonnull Layout layout, int sectionStart, int sectionEnd) {
+    private static int getSectionWidth(@NonNull Layout layout, int sectionStart, int sectionEnd) {
         CharSequence text = layout.getText();
         TextPaint paint = layout.getPaint();
 
         return (int) Layout.getDesiredWidth(text, sectionStart, sectionEnd, paint);
     }
 
-    private static Layout createUnrestrictedLayout(@Nonnull TextView view) {
+    private static Layout createUnrestrictedLayout(@NonNull TextView view) {
         CharSequence text = view.getText();
         Layout layout = view.getLayout();
         TextPaint paint = layout.getPaint();
@@ -300,12 +299,12 @@ public final class ReflowTextAnimatorHelper {
         }
     }
 
-    private static void drawLayerBounds(@Nonnull Canvas canvas,
-                                        @Nonnull Rect bounds,
+    private static void drawLayerBounds(@NonNull Canvas canvas,
+                                        @NonNull Rect bounds,
                                         int sectionNumber,
-                                        @Nonnull Paint fillPaint,
-                                        @Nonnull Paint outlinePaint,
-                                        @Nonnull Paint textPaint) {
+                                        @NonNull Paint fillPaint,
+                                        @NonNull Paint outlinePaint,
+                                        @NonNull Paint textPaint) {
         Rect startRect = new Rect(bounds.left + 1, bounds.top + 1, bounds.right - 1, bounds.bottom - 1);
         canvas.drawRect(startRect, fillPaint);
         canvas.drawRect(startRect, outlinePaint);
@@ -315,11 +314,11 @@ public final class ReflowTextAnimatorHelper {
     /**
      * Create Animators to transition each run of text from start to end position and size.
      */
-    @Nonnull
-    private List<Animator> createRunAnimators(@Nonnull View view,
-                                              @Nonnull Bitmap startText,
-                                              @Nonnull Bitmap endText,
-                                              @Nonnull List<Run> runs) {
+    @NonNull
+    private List<Animator> createRunAnimators(@NonNull View view,
+                                              @NonNull Bitmap startText,
+                                              @NonNull Bitmap endText,
+                                              @NonNull List<Run> runs) {
         Rect sourceViewBounds = getBounds(sourceView); // position on the screen of source view
         Rect targetViewBounds = getBounds(targetView); // position on the screen of target view
 
@@ -487,7 +486,7 @@ public final class ReflowTextAnimatorHelper {
         return propertyValuesHolder;
     }
 
-    private Bitmap createBitmap(@Nonnull View view) {
+    private Bitmap createBitmap(@NonNull View view) {
         int width = view.getMeasuredWidth();
         int height = view.getMeasuredHeight() * (showLayers ? 3 : 1);
         Bitmap bitmap = Bitmap.createBitmap(width, height, ARGB_8888);
@@ -499,7 +498,7 @@ public final class ReflowTextAnimatorHelper {
     /**
      * Calculate the withDuration for the transition depending upon how far the text has to move.
      */
-    private long calculateDuration(@Nonnull Rect startPosition, @Nonnull Rect endPosition) {
+    private long calculateDuration(@NonNull Rect startPosition, @NonNull Rect endPosition) {
         float distance = (float) Math.hypot(
                 startPosition.exactCenterX() - endPosition.exactCenterX(),
                 startPosition.exactCenterY() - endPosition.exactCenterY());
@@ -513,7 +512,7 @@ public final class ReflowTextAnimatorHelper {
         private static final long DEFAULT_MIN_DURATION = 200L;
         private static final long DEFAULT_MAX_DURATION = 400L;
         private static final long DEFAULT_STAGGER = 40L;
-        private static final TextSizeGetter DEFAULT_FONT_SIZE_GETTER = new TextSIzeGetterImpl();
+        private static final TextSizeGetter DEFAULT_FONT_SIZE_GETTER = TextView::getTextSize;
 
         private TextView sourceView;
         private TextView targetView;
@@ -530,7 +529,7 @@ public final class ReflowTextAnimatorHelper {
          * @param from This View will be transformed to look like {@code to}.
          * @param to The View {@code from} will match at the end of the animation.
          */
-        public Builder(@Nonnull TextView from, @Nonnull TextView to) {
+        public Builder(@NonNull TextView from, @NonNull TextView to) {
             this.sourceView = from;
             this.targetView = to;
 
