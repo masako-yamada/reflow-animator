@@ -19,6 +19,7 @@ package com.shazam.android.reflow.basic;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -26,8 +27,6 @@ import android.widget.TextView;
 
 import com.shazam.android.reflow.R;
 import com.shazam.android.widget.text.reflow.ReflowTextAnimatorHelper;
-
-import javax.annotation.Nullable;
 
 public class BasicSampleActivity extends AppCompatActivity {
     @Override

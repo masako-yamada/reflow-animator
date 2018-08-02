@@ -16,12 +16,15 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
     implementation project(path: ':library')
 
-    implementation "com.google.code.findbugs:jsr305:${versions.jsr305}"
     implementation "com.android.support:appcompat-v7:${versions.appcompat}"
 
     implementation "com.jakewharton:butterknife:${versions.butterknife}"
