@@ -74,8 +74,10 @@ public final class ReflowTextAnimatorHelper {
     private final long velocity;
     private final long minDuration;
     private final long maxDuration;
+    private final TextSizeGetter fontSizeGetter;
     private long staggerDelay;
     private long duration;
+    private boolean calculateDuration;
     // This is a hack to prevent source view from drawing briefly at the end of the animation :(
     private final boolean freezeOnLastFrame;
 
@@ -89,9 +91,11 @@ public final class ReflowTextAnimatorHelper {
         this.targetView = builder.targetView;
         this.minDuration = builder.minDuration;
         this.maxDuration = builder.maxDuration;
+        this.calculateDuration = builder.calculateDuration;
         this.staggerDelay = builder.staggerDelay;
         this.velocity = builder.velocity;
         this.freezeOnLastFrame = builder.freezeOnLastFrame;
+        this.fontSizeGetter = builder.fontSizeGetter;
     }
 
     /**
@@ -99,21 +103,21 @@ public final class ReflowTextAnimatorHelper {
      * @return An Android Animator. Run or add in an AnimatorSet.
      */
     public Animator createAnimator() {
-        duration = calculateDuration(getBounds(sourceView), getBounds(targetView));
+        duration = calculateDuration ? calculateDuration(getBounds(sourceView), getBounds(targetView)) : -1;
 
         // capture bitmaps of the text
         startText = createBitmap(sourceView);
         endText = createBitmap(targetView);
 
         // temporarily turn off clipping so we can draw outside of our bounds don't draw
-        sourceView.setWillNotDraw(true);
-        ((ViewGroup) sourceView.getParent()).setClipChildren(false);
+        targetView.setWillNotDraw(true);
+        ((ViewGroup) targetView.getParent()).setClipChildren(false);
 
         // calculate the runs of text to move together
         List<Run> runs = getRuns();
 
         // buildAnimator animators for moving, scaling and fading each run of text
-        animator.playTogether(createRunAnimators(sourceView, startText, endText, runs));
+        animator.playTogether(createRunAnimators(targetView, startText, endText, runs));
 
         if (!freezeOnLastFrame) {
             animator.addListener(new AnimatorListenerAdapter() {
@@ -133,9 +137,9 @@ public final class ReflowTextAnimatorHelper {
      */
     @SuppressWarnings("WeakerAccess")
     public void unfreeze() {
-        sourceView.setWillNotDraw(false);
-        sourceView.getOverlay().clear();
-        ((ViewGroup) sourceView.getParent()).setClipChildren(true);
+        targetView.setWillNotDraw(false);
+        targetView.getOverlay().clear();
+        ((ViewGroup) targetView.getParent()).setClipChildren(true);
 
         if (startText != null) {
             startText.recycle();
@@ -201,8 +205,8 @@ public final class ReflowTextAnimatorHelper {
             }
 
             if (startLine != currentStartLine
-                    || endLine != currentEndLine
-                    || isLastChar) {
+                || endLine != currentEndLine
+                || isLastChar) {
                 if (isLastChar) {
                     charPosition += 1;
                 }
@@ -320,8 +324,8 @@ public final class ReflowTextAnimatorHelper {
         Rect targetViewBounds = getBounds(targetView); // position on the screen of target view
 
         List<Animator> animators = new ArrayList<>(runs.size());
-        int dx = sourceViewBounds.left - targetViewBounds.left;
-        int dy = sourceViewBounds.top - targetViewBounds.top;
+        int dx = targetViewBounds.left - sourceViewBounds.left;
+        int dy = targetViewBounds.top - sourceViewBounds.top;
         long startDelay = 0L;
         // move text closest to the destination first i.e. loop forward or backward over the runs
         boolean upward = sourceViewBounds.centerY() > targetViewBounds.centerY();
@@ -342,7 +346,7 @@ public final class ReflowTextAnimatorHelper {
             endPaint.setStrokeWidth(1);
             endPaint.setColor(0x80ff0000);
 
-            int[] colors = sourceView.getResources().getIntArray(R.array.debug_colors);
+            int[] colors = sourceView.getResources().getIntArray(com.shazam.android.widget.text.reflow.R.array.debug_colors);
             int color = 0;
 
             Canvas startCanvas = new Canvas(startText);
@@ -371,8 +375,8 @@ public final class ReflowTextAnimatorHelper {
 
             // buildAnimator & position the drawable which displays the run; add it to the overlay.
             SwitchDrawable drawable = new SwitchDrawable(
-                    startText, run.getStart(), sourceView.getTextSize(),
-                    endText, run.getEnd(), targetView.getTextSize());
+                    startText, run.getStart(), fontSizeGetter.get(sourceView),
+                    endText, run.getEnd(), fontSizeGetter.get(targetView));
             drawable.setBounds(
                     run.getStart().left,
                     run.getStart().top,
@@ -393,7 +397,7 @@ public final class ReflowTextAnimatorHelper {
 
             boolean rightward = run.getStart().centerX() + dx < run.getEnd().centerX();
             if ((run.isStartVisible() && run.isEndVisible())
-                    && !first && rightward != lastRightward) {
+                && !first && rightward != lastRightward) {
                 // increase the start delay (by a decreasing amount) for the next run
                 // (if it's visible throughout) to stagger the movement and try to minimize overlaps
                 startDelay += staggerDelay;
@@ -404,7 +408,7 @@ public final class ReflowTextAnimatorHelper {
 
             runAnim.setStartDelay(startDelay);
             long animDuration = Math.max(minDuration, duration - (startDelay / 2));
-            runAnim.setDuration(animDuration);
+            if (calculateDuration) runAnim.setDuration(animDuration);
             animators.add(runAnim);
 
             if (run.isStartVisible() != run.isEndVisible()) {
@@ -414,7 +418,7 @@ public final class ReflowTextAnimatorHelper {
                         SwitchDrawable.ALPHA,
                         run.isStartVisible() ? OPAQUE : TRANSPARENT,
                         run.isEndVisible() ? OPAQUE : TRANSPARENT);
-                fade.setDuration((duration + startDelay) / 2);
+                if (calculateDuration) fade.setDuration((duration + startDelay) / 2);
                 if (!run.isStartVisible()) {
                     drawable.setAlpha(TRANSPARENT);
                     fade.setStartDelay((duration + startDelay) / 2);
@@ -429,7 +433,7 @@ public final class ReflowTextAnimatorHelper {
                         SwitchDrawable.ALPHA,
                         OPAQUE, OPACITY_MID_TRANSITION, OPAQUE);
                 fade.setStartDelay(startDelay);
-                fade.setDuration(duration + startDelay);
+                if (calculateDuration) fade.setDuration(duration + startDelay);
                 fade.setInterpolator(linearInterpolator);
                 animators.add(fade);
             }
@@ -456,10 +460,12 @@ public final class ReflowTextAnimatorHelper {
             };
             propertyValuesHolder = PropertyValuesHolder.ofObject(SwitchDrawable.TOP_LEFT, null,
                     pathMotion.getPath(
-                            run.getStart().left,
-                            run.getStart().top,
                             run.getEnd().left - dx,
-                            run.getEnd().top - dy));
+                            run.getEnd().top - dy,
+                            run.getStart().left,
+                            run.getStart().top
+                    )
+            );
         } else {
             PointF startPoint = new PointF(run.getStart().left, run.getStart().top);
             PointF endPoint = new PointF(run.getEnd().left - dx, run.getEnd().top - dy);
@@ -503,9 +509,11 @@ public final class ReflowTextAnimatorHelper {
 
     public static class Builder {
         private static final long DEFAULT_VELOCITY = 700L;
+        private static final boolean DEFAULT_CALCULATE_DURATION = true;
         private static final long DEFAULT_MIN_DURATION = 200L;
         private static final long DEFAULT_MAX_DURATION = 400L;
         private static final long DEFAULT_STAGGER = 40L;
+        private static final TextSizeGetter DEFAULT_FONT_SIZE_GETTER = new TextSIzeGetterImpl();
 
         private TextView sourceView;
         private TextView targetView;
@@ -515,6 +523,8 @@ public final class ReflowTextAnimatorHelper {
         private long staggerDelay = DEFAULT_STAGGER;
         private long velocity = DEFAULT_VELOCITY;
         private boolean freezeOnLastFrame = false;
+        private boolean calculateDuration = DEFAULT_CALCULATE_DURATION;
+        private TextSizeGetter fontSizeGetter = DEFAULT_FONT_SIZE_GETTER;
 
         /**
          * @param from This View will be transformed to look like {@code to}.
@@ -528,12 +538,12 @@ public final class ReflowTextAnimatorHelper {
             if (sourceView == null) {
                 throw new IllegalArgumentException("Source view can't be null");
             } else if (!isLaidOut(sourceView)) {
-                throw new IllegalArgumentException("Source view not laid out. Consider calling this in an OnPreDrawListener!");
+                //                throw new IllegalArgumentException("Source view not laid out. Consider calling this in an OnPreDrawListener!");
             }
             if (targetView == null) {
                 throw new IllegalArgumentException("Target view can't be null");
             } else if (!isLaidOut(targetView)) {
-                throw new IllegalArgumentException("Target view not laid out. Consider calling this in an OnPreDrawListener!");
+                //                throw new IllegalArgumentException("Target view not laid out. Consider calling this in an OnPreDrawListener!");
             }
         }
 
@@ -559,6 +569,16 @@ public final class ReflowTextAnimatorHelper {
         }
 
         /**
+         * Control whether or not Duration should be calculated
+         * @param calculateDuration Default is {@value }
+         * @return {@link Builder}
+         */
+        public Builder calculateDuration(boolean calculateDuration) {
+            this.calculateDuration = calculateDuration;
+            return this;
+        }
+
+        /**
          * @param staggerDelayMs Time by which each moving part will be staggered to reduce overlap.
          *                       The real stagger duration for each part is decaying, so this is only a starting value. Default is {@value DEFAULT_STAGGER}.
          * @return {@link Builder}
@@ -566,6 +586,10 @@ public final class ReflowTextAnimatorHelper {
         public Builder withStaggerDelay(long staggerDelayMs) {
             this.staggerDelay = staggerDelayMs;
             return this;
+        }
+
+        public void setFontSizeGetter(TextSizeGetter fontSizeGetter) {
+            this.fontSizeGetter = fontSizeGetter;
         }
 
         /**
@@ -610,3 +634,4 @@ public final class ReflowTextAnimatorHelper {
         }
     }
 }
+
