@@ -26,10 +26,9 @@ import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.Property;
-
-import javax.annotation.Nonnull;
 
 /**
  * A drawable which shows (a portion of) one of two given bitmaps, switching between them once
@@ -117,11 +116,11 @@ class SwitchDrawable extends Drawable {
     private int width, height;
 
     SwitchDrawable(
-            @Nonnull Bitmap startBitmap,
-            @Nonnull Rect startBitmapSrcBounds,
+            @NonNull Bitmap startBitmap,
+            @NonNull Rect startBitmapSrcBounds,
             float startFontSize,
-            @Nonnull Bitmap endBitmap,
-            @Nonnull Rect endBitmapSrcBounds,
+            @NonNull Bitmap endBitmap,
+            @NonNull Rect endBitmapSrcBounds,
             float endFontSize) {
         currentBitmap = startBitmap;
         currentBitmapSrcBounds = startBitmapSrcBounds;
@@ -132,7 +131,7 @@ class SwitchDrawable extends Drawable {
     }
 
     @Override
-    public void draw(@Nonnull Canvas canvas) {
+    public void draw(@NonNull Canvas canvas) {
         canvas.drawBitmap(currentBitmap, currentBitmapSrcBounds, getBounds(), paint);
     }
 
