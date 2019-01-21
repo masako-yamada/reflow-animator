@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion versions.compileSdk
-    buildToolsVersion versions.buildTools
+
     defaultConfig {
         applicationId 'com.shazam.android.reflowsample'
         minSdkVersion versions.minSdk
