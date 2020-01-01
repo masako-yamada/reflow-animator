@@ -31,7 +31,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -44,11 +43,13 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.NonNull;
+
 import static android.graphics.Bitmap.Config.ARGB_8888;
 import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
-import static android.support.v4.view.ViewCompat.isLaidOut;
+import static androidx.core.view.ViewCompat.isLaidOut;
 
 /**
  * A transition for repositioning text. This will animate changes in text size and position,
@@ -74,6 +75,7 @@ public final class ReflowTextAnimatorHelper {
     private final long minDuration;
     private final long maxDuration;
     private final TextSizeGetter fontSizeGetter;
+    private final BoundsCalculator boundsCalculator;
     private long staggerDelay;
     private long duration;
     private boolean calculateDuration;
@@ -95,6 +97,7 @@ public final class ReflowTextAnimatorHelper {
         this.velocity = builder.velocity;
         this.freezeOnLastFrame = builder.freezeOnLastFrame;
         this.fontSizeGetter = builder.fontSizeGetter;
+        this.boundsCalculator = builder.boundsCalculator;
     }
 
     /**
@@ -102,7 +105,7 @@ public final class ReflowTextAnimatorHelper {
      * @return An Android Animator. Run or add in an AnimatorSet.
      */
     public Animator createAnimator() {
-        duration = calculateDuration ? calculateDuration(getBounds(sourceView), getBounds(targetView)) : -1;
+        duration = calculateDuration ? calculateDuration(boundsCalculator.calculate(sourceView), boundsCalculator.calculate(targetView)) : -1;
 
         // capture bitmaps of the text
         startText = createBitmap(sourceView);
@@ -148,12 +151,6 @@ public final class ReflowTextAnimatorHelper {
             endText.recycle();
             endText = null;
         }
-    }
-
-    private static Rect getBounds(View view) {
-        int[] loc = new int[2];
-        view.getLocationInWindow(loc);
-        return new Rect(loc[0], loc[1], loc[0] + view.getWidth(), loc[1] + view.getHeight());
     }
 
     /**
@@ -319,8 +316,8 @@ public final class ReflowTextAnimatorHelper {
                                               @NonNull Bitmap startText,
                                               @NonNull Bitmap endText,
                                               @NonNull List<Run> runs) {
-        Rect sourceViewBounds = getBounds(sourceView); // position on the screen of source view
-        Rect targetViewBounds = getBounds(targetView); // position on the screen of target view
+        Rect sourceViewBounds = boundsCalculator.calculate(sourceView); // position on the screen of source view
+        Rect targetViewBounds = boundsCalculator.calculate(targetView); // position on the screen of target view
 
         List<Animator> animators = new ArrayList<>(runs.size());
         int dx = targetViewBounds.left - sourceViewBounds.left;
@@ -524,6 +521,11 @@ public final class ReflowTextAnimatorHelper {
         private boolean freezeOnLastFrame = false;
         private boolean calculateDuration = DEFAULT_CALCULATE_DURATION;
         private TextSizeGetter fontSizeGetter = DEFAULT_FONT_SIZE_GETTER;
+        private BoundsCalculator boundsCalculator = view -> {
+            int[] loc = new int[2];
+            view.getLocationInWindow(loc);
+            return new Rect(loc[0], loc[1], loc[0] + view.getWidth(), loc[1] + view.getHeight());
+        };
 
         /**
          * @param from This View will be transformed to look like {@code to}.
@@ -574,6 +576,11 @@ public final class ReflowTextAnimatorHelper {
          */
         public Builder calculateDuration(boolean calculateDuration) {
             this.calculateDuration = calculateDuration;
+            return this;
+        }
+
+        public Builder setBoundsCalculator(BoundsCalculator boundsCalculator) {
+            this.boundsCalculator = boundsCalculator;
             return this;
         }
 
