@@ -50,6 +50,7 @@ import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static androidx.core.view.ViewCompat.isLaidOut;
+import static com.shazam.android.widget.text.reflow.ColorUtils.colorToLAB;
 
 /**
  * A transition for repositioning text. This will animate changes in text size and position,
@@ -75,6 +76,7 @@ public final class ReflowTextAnimatorHelper {
     private final long minDuration;
     private final long maxDuration;
     private final TextSizeGetter fontSizeGetter;
+    private final TextColorGetter textColorGetter;
     private final BoundsCalculator boundsCalculator;
     private long staggerDelay;
     private long duration;
@@ -97,6 +99,7 @@ public final class ReflowTextAnimatorHelper {
         this.velocity = builder.velocity;
         this.freezeOnLastFrame = builder.freezeOnLastFrame;
         this.fontSizeGetter = builder.fontSizeGetter;
+        this.textColorGetter = builder.textColorGetter;
         this.boundsCalculator = builder.boundsCalculator;
     }
 
@@ -372,7 +375,9 @@ public final class ReflowTextAnimatorHelper {
             // buildAnimator & position the drawable which displays the run; add it to the overlay.
             SwitchDrawable drawable = new SwitchDrawable(
                     startText, run.getStart(), fontSizeGetter.get(sourceView),
-                    endText, run.getEnd(), fontSizeGetter.get(targetView));
+                    endText, run.getEnd(), fontSizeGetter.get(targetView),
+                    textColorGetter.get(sourceView), textColorGetter.get(targetView)
+            );
             drawable.setBounds(
                     run.getStart().left,
                     run.getStart().top,
@@ -510,6 +515,7 @@ public final class ReflowTextAnimatorHelper {
         private static final long DEFAULT_MAX_DURATION = 400L;
         private static final long DEFAULT_STAGGER = 40L;
         private static final TextSizeGetter DEFAULT_FONT_SIZE_GETTER = TextView::getTextSize;
+        private static final TextColorGetter DEFAULT_TEXT_COLOR_GETTER = TextView::getCurrentTextColor;
 
         private TextView sourceView;
         private TextView targetView;
@@ -521,6 +527,7 @@ public final class ReflowTextAnimatorHelper {
         private boolean freezeOnLastFrame = false;
         private boolean calculateDuration = DEFAULT_CALCULATE_DURATION;
         private TextSizeGetter fontSizeGetter = DEFAULT_FONT_SIZE_GETTER;
+        private TextColorGetter textColorGetter = DEFAULT_TEXT_COLOR_GETTER;
         private BoundsCalculator boundsCalculator = view -> {
             int[] loc = new int[2];
             view.getLocationInWindow(loc);
@@ -596,6 +603,11 @@ public final class ReflowTextAnimatorHelper {
 
         public void setFontSizeGetter(TextSizeGetter fontSizeGetter) {
             this.fontSizeGetter = fontSizeGetter;
+        }
+
+        public Builder setTextColorGetter(TextColorGetter textColorGetter) {
+            this.textColorGetter = textColorGetter;
+            return this;
         }
 
         /**

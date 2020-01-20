@@ -24,11 +24,18 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.util.Property;
+
 import androidx.annotation.NonNull;
 import androidx.core.graphics.drawable.DrawableCompat;
-import android.util.Property;
+
+import static com.shazam.android.widget.text.reflow.ColorUtils.blendLab;
+import static com.shazam.android.widget.text.reflow.ColorUtils.colorToLAB;
+import static com.shazam.android.widget.text.reflow.ColorUtils.labToColor;
 
 /**
  * A drawable which shows (a portion of) one of two given bitmaps, switching between them once
@@ -114,6 +121,9 @@ class SwitchDrawable extends Drawable {
     private boolean hasSwitched = false;
     private PointF topLeft;
     private int width, height;
+    private final double[] startColor;
+    private final double[] endColor;
+    private final double[] color = new double[3];
 
     SwitchDrawable(
             @NonNull Bitmap startBitmap,
@@ -121,11 +131,15 @@ class SwitchDrawable extends Drawable {
             float startFontSize,
             @NonNull Bitmap endBitmap,
             @NonNull Rect endBitmapSrcBounds,
-            float endFontSize) {
+            float endFontSize,
+            int startColor,
+            int endColor) {
         currentBitmap = startBitmap;
         currentBitmapSrcBounds = startBitmapSrcBounds;
         this.endBitmap = endBitmap;
         this.endBitmapSrcBounds = endBitmapSrcBounds;
+        this.startColor = colorToLAB(startColor);
+        this.endColor = colorToLAB(endColor);
         switchThreshold = startFontSize / (startFontSize + endFontSize);
         paint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
     }
@@ -161,11 +175,17 @@ class SwitchDrawable extends Drawable {
     }
 
     void setProgress(float progress) {
+        setColor(progress);
         if (!hasSwitched && progress >= switchThreshold) {
             currentBitmap = endBitmap;
             currentBitmapSrcBounds = endBitmapSrcBounds;
             hasSwitched = true;
         }
+    }
+
+    public void setColor(float progress) {
+        blendLab(startColor, endColor, progress, color);
+        paint.setColorFilter(new PorterDuffColorFilter(labToColor(color), PorterDuff.Mode.SRC_IN));
     }
 
     PointF getTopLeft() {
