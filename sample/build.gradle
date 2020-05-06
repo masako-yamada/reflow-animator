@@ -2,7 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion versions.compileSdk
-
     defaultConfig {
         applicationId 'com.shazam.android.reflowsample'
         minSdkVersion versions.minSdk
@@ -25,7 +24,7 @@ android {
 dependencies {
     implementation project(path: ':library')
 
-    implementation "com.android.support:appcompat-v7:${versions.appcompat}"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 
     implementation "com.jakewharton:butterknife:${versions.butterknife}"
     annotationProcessor "com.jakewharton:butterknife-compiler:${versions.butterknife}"
